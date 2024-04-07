@@ -2,9 +2,10 @@
 const shopModel = require('../models/shop.model')
 const bcrypt = require('bcrypt')
 const crypto = require('node:crypto')
-const KeyTokenService = require('./keyToken.sevice')
+const KeyTokenService = require('./keyToken.service')
 const createTokenPair = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
+const { BadRequestError } = require('../core/error.response')
 
 const roleShop = {
     SHOP : 'SHOP',
@@ -15,16 +16,17 @@ const roleShop = {
 
 class AccessService {
     static signUp = async ({name, email, password}) => {
-        try {
+        // try {
             // step1: check email exists?
-            const hodelShop = await shopModel.findOne({email}).lean()
+            const holderShop = await shopModel.findOne({email}).lean()
             
             
-            if (hodelShop) {
-                return {
-                    code: 'xxxx',
-                    message: 'Shop aready registered!!!'
-                }
+            if (holderShop) {
+                // return {
+                //     code: 'xxxx',
+                //     message: 'Shop already registered!!!'
+                // }
+                throw new BadRequestError('Error: Shop already registered')
             }
 
             const passwordHash = await bcrypt.hash(password, 10)
@@ -67,7 +69,7 @@ class AccessService {
 
                 return {
                     code: 201,
-                    metatdata: {
+                    metadata: {
                         shop: getInfoData({fields : ['_id', 'name', 'email' ], object : newShop}),
                         tokens
                     }
@@ -78,13 +80,13 @@ class AccessService {
                 code: 200,
                 metadata: null
             }
-        } catch (error) {
-            return {
-                code: 'xxx',
-                message: error.message,
-                status: 'error'
-            }
-        }
+        // } catch (error) {
+        //     return {
+        //         code: 'xxx',
+        //         message: error.message,
+        //         status: 'error'
+        //     }
+        // }
     }
 }
 
