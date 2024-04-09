@@ -28,15 +28,15 @@ const productSchema = new Schema({
     product_type: {
         type: String,
         required: true,
-        enum: ['Electronics', 'clothing', 'Furniture']
+        enum: ['Electronics', 'Clothing', 'Furniture']
     },
 
     product_shop: {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Shop'
     },
     product_attributes: {
-        type: Types.Mixed,
+        type: Schema.Types.Mixed,
         required: true,
     },
 },{
