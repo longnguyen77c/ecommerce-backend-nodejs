@@ -8,7 +8,8 @@ const { authentication } = require('../../auth/authUtils')
 const productController = require('../../controllers/product.controller')
 
 router.get('/search/:keySearch', asyncHandler(productController.getListSearchProduct))
-
+router.get('', asyncHandler(productController.findAllProducts))
+router.get('/:product_id', asyncHandler(productController.findProduct))
 // authentication
 router.use(authentication)
 
