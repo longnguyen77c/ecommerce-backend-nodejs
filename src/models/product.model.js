@@ -84,8 +84,26 @@ const electronicSchema = new Schema({
     timestamps: true,
 })
 
+const furnitureSchema = new Schema({
+    manufacturer: {
+        type: String, 
+        require: true
+    },
+    model: String,
+    color: String,    
+    product_shop: {
+        type: Schema.Types.ObjectId,
+        ref: 'Shop'
+    }
+    
+}, {
+    collection: 'furnitures',
+    timestamps: true,
+})
+
 module.exports = {
     product: model(DOCUMENT_NAME, productSchema),
     electronic: model('Electronics', electronicSchema),
-    clothing: model('Clothings', clothingSchema)
+    clothing: model('Clothings', clothingSchema),
+    furniture: model('Furnitures', furnitureSchema)
 }
