@@ -9,8 +9,10 @@ const {
     unPublishProductByShop, 
     searchProductByUser, 
     findAllProducts,
-    findProduct
+    findProduct,
+    updateProductById
 } = require('../models/repositories/product.repo')
+const {removeUndefinedObject, updateNestedObjectParser} = require('../utils')
 
 
 // define Factory class to create product
@@ -48,11 +50,11 @@ class ProductFactory {
     }
 
 
-    static async updateProduct(type, payload) {
+    static async updateProduct(type, productId, payload) {
         const productClass = ProductFactory.productRegistry[type]
         if (!productClass) 
             throw new BadRequestError(`Invalid product type ${type}`)
-        return new productClass(payload).createProduct()
+        return new productClass(payload).updateProduct(productId)
     }
 
     // PUT 
@@ -87,10 +89,10 @@ class ProductFactory {
     }
 
     static async findProduct ( {product_id}){
-        return await findProduct({product_id, unSelect: ['__v']})
+        return await findProduct({product_id, unSelect: ['__v   ']})
     }
 
-    static async findAllProducts ( {limit = 50, sort = 'ctiem', page = 1, filter = {isPublished: true}}){
+    static async findAllProducts ( {limit = 50, sort = 'ctime', page = 1, filter = {isPublished: true}}){
         return await findAllProducts({limit, sort, filter, page, 
             select: ['product_name', 'product_price', 'product_thumb']
         })
@@ -126,6 +128,11 @@ class Product {
         
         return await product.create({...this, _id: product_id})
     }
+
+    // update product
+    async updateProduct(productId, bodyUpdate) { 
+        return await updateProductById({productId, bodyUpdate, model: product})
+    }
 }
 
 // Define sub-class for different product types Clothing
@@ -143,6 +150,24 @@ class Clothing extends Product {
         if (!newProduct) throw new BadRequestError('Create new product error')
         
         return newProduct
+    }
+
+    async updateProduct(productId) {
+        // 1. remove attribute has null or undefined
+        const objectParams = removeUndefinedObject(this)
+        // 2. check where update
+
+        if (objectParams.product_attributes){
+            // update child 
+            await updateProductById({
+                productId, 
+                bodyUpdate: updateNestedObjectParser(objectParams.product_attributes), 
+                model: clothing
+            })
+        }
+
+        const updateProduct = super.updateProduct(productId, updateNestedObjectParser(objectParams))
+        return updateProduct
     }
 }
 
