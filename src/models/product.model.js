@@ -1,5 +1,6 @@
 'use strict'
 
+const slugify = require('slugify')
 const {model, Schema, Types} = require('mongoose')
 
 const DOCUMENT_NAME = 'Product'
@@ -15,6 +16,9 @@ const productSchema = new Schema({
         required: true,
     },
     product_description: {
+        type: String,
+    },
+    product_slug: {
         type: String,
     },
     product_price: {
@@ -39,10 +43,33 @@ const productSchema = new Schema({
         type: Schema.Types.Mixed,
         required: true,
     },
+    product_ratingAverage: {
+        type: Number,
+        default: 4.5,
+        min: [1, 'Rating must be above 1.0'],
+        max: [5, 'Rating must be under 5.0'],
+        set: (val) => Math.round(val * 10) / 10
+    },
+    product_variations: {
+        type: Array,
+        default: []
+    },
+    isDraft: { type: Boolean, default: true, index: true, select: false},
+    isPublished: { type: Boolean, default: false, index: true, select: false},
 },{
     collections: COLLECTION_NAME,
     timestamps: true,
 })
+
+// create index for search
+productSchema.index({ product_name: 'text', product_description: 'text'})
+
+
+// Document middleware: run before .save() and .create()
+productSchema.pre('save', function( next) {
+    this.product_slug = slugify(this.product_name, {lower: true})
+    next()
+})  
 
 // define the product type = clothing
 const clothingSchema = new Schema({
